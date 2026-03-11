@@ -1,0 +1,12 @@
+langchain
+langchain-ollama
+langchain-chroma
+pandas
+pypdf
+pdfplumber
+PyMuPDF
+pytesseract
+Pillow
+ibm-watsonx-ai
+langchain-ibm
+streamlit
