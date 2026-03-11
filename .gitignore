@@ -8,9 +8,12 @@ __pycache__/
 venv/
 env/
 
-# Notebook checkpoints
+# Notebook artifacts
 .ipynb_checkpoints/
+*.ipynb
 
+# Local manuals (not needed when shipping prebuilt Chroma DB)
+Manuals/
 
 # OS/editor artifacts
 .DS_Store
