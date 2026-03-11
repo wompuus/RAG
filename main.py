@@ -12,7 +12,7 @@ from vector import vector_store
 # ----------------------------
 # Config
 # ----------------------------
-MODEL_NAME = os.getenv("OLLAMA_MODEL", "mannix/llama3.1-8b-abliterated")
+MODEL_NAME = os.getenv("OLLAMA_MODEL", "qwen2.5:7b-instruct")
 
 RAW_K = 20
 SEED_K = 6
