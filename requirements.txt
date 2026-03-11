@@ -1,6 +1,7 @@
 langchain
 langchain-ollama
 langchain-chroma
+langchain-text-splitters
 pandas
 pypdf
 pdfplumber
