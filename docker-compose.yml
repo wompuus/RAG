@@ -3,8 +3,6 @@ services:
     image: ollama/ollama:latest
     container_name: rag-ollama
     restart: unless-stopped
-    ports:
-      - "11434:11434"
     volumes:
       - ollama_data:/root/.ollama
     command: >
@@ -24,8 +22,8 @@ services:
     restart: unless-stopped
     depends_on:
       - ollama
-    ports:
-      - "8501:8501"
+    expose:
+      - "8501"
     environment:
       OLLAMA_HOST: http://ollama:11434
       OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:7b-instruct}
@@ -33,5 +31,25 @@ services:
     volumes:
       - ./chroma_langchain_db:/app/chroma_langchain_db
 
+  caddy:
+    image: caddy:2
+    container_name: rag-caddy
+    restart: unless-stopped
+    depends_on:
+      - app
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMAIN: ${DOMAIN}
+      BASIC_AUTH_USER: ${BASIC_AUTH_USER}
+      BASIC_AUTH_HASH: ${BASIC_AUTH_HASH}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
 volumes:
   ollama_data:
+  caddy_data:
+  caddy_config:
