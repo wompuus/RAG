@@ -37,19 +37,32 @@ services:
     restart: unless-stopped
     depends_on:
       - app
-    ports:
-      - "80:80"
-      - "443:443"
+    expose:
+      - "80"
     environment:
-      DOMAIN: ${DOMAIN}
       BASIC_AUTH_USER: ${BASIC_AUTH_USER}
       BASIC_AUTH_HASH: ${BASIC_AUTH_HASH}
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
-      - caddy_data:/data
-      - caddy_config:/config
+
+  # Free/zero-domain option: random public URL like https://abc.trycloudflare.com
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: rag-cloudflared
+    restart: unless-stopped
+    depends_on:
+      - caddy
+    command: tunnel --no-autoupdate --url http://caddy:80
+
+  # Stable URL option if you later add a Cloudflare-managed domain + tunnel token
+  cloudflared-token:
+    image: cloudflare/cloudflared:latest
+    container_name: rag-cloudflared-token
+    restart: unless-stopped
+    depends_on:
+      - caddy
+    profiles: ["token"]
+    command: tunnel --no-autoupdate run --token ${CF_TUNNEL_TOKEN}
 
 volumes:
   ollama_data:
-  caddy_data:
-  caddy_config:

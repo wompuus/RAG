@@ -1,4 +1,4 @@
-{$DOMAIN} {
+:80 {
   encode zstd gzip
 
   basicauth {

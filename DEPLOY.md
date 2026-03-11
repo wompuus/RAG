@@ -1,63 +1,83 @@
-# RAG Deployment (Docker + Caddy HTTPS)
+# RAG Deployment (Docker + Cloudflare Tunnel + Basic Auth)
 
-## 1) Prerequisites
+This setup publishes your local Docker stack to the internet without opening router ports.
 
-- A public domain/subdomain (example: `rag.yourcompany.com`)
-- A host/VM with Docker + Docker Compose
-- DNS A record for your domain pointing to the host public IP
-- Firewall allows inbound `80/tcp` and `443/tcp`
+## What you get
 
-## 2) Configure environment
+- `ollama` for local models
+- `app` for Streamlit
+- `caddy` for basic-auth protection
+- `cloudflared` for public HTTPS URL
 
-Copy `.env.example` to `.env` and edit values:
+## 1) Configure secrets
+
+Copy `.env.example` to `.env`:
 
 ```bash
 cp .env.example .env
 ```
 
-Generate a basic-auth password hash:
+Create a password hash for Caddy basic auth:
 
 ```bash
 docker run --rm caddy:2 caddy hash-password --plaintext "your-strong-password"
 ```
 
-Put that hash into `BASIC_AUTH_HASH` in `.env`.
+Put that result into `BASIC_AUTH_HASH`.
 
-## 3) Launch stack
+## 2) Start with free Cloudflare URL (no paid domain)
 
 ```bash
 docker compose up --build -d
 ```
 
-Services:
-- `caddy` (public HTTPS edge)
-- `app` (internal Streamlit)
-- `ollama` (internal model service)
+Get the public URL:
 
-## 4) Verify
+```bash
+docker compose logs -f cloudflared
+```
 
-- Visit `https://<your-domain>`
-- Browser should prompt for username/password
-- After login, Streamlit app should load
+Look for a line containing `trycloudflare.com`.
 
-## 5) Security notes
+Share that URL with your team. They will see a username/password prompt first.
 
-- `ollama` is no longer published to the public internet
-- `app` is internal-only (`expose`, no host port)
-- Keep strong basic auth credentials
-- For enterprise access control, place this behind VPN/SSO/Zero Trust
+## 3) Important behavior of free URL mode
+
+- URL is random and may change on restart/redeploy.
+- Good for pilots and internal testing.
+- For stable company URL, use token mode below.
+
+## 4) Optional: stable URL mode (Cloudflare account + tunnel token)
+
+If you later add a domain in Cloudflare:
+
+1. Create a named tunnel in Cloudflare Zero Trust dashboard.
+2. Set public hostname (example: `rag.yourcompany.com`) to `http://caddy:80`.
+3. Copy tunnel token into `.env` as `CF_TUNNEL_TOKEN`.
+4. Run token profile:
+
+```bash
+docker compose up -d --profile token cloudflared-token
+```
+
+5. Stop quick tunnel service:
+
+```bash
+docker compose stop cloudflared
+```
 
 ## Operations
 
 View logs:
 
 ```bash
-docker compose logs -f caddy
 docker compose logs -f app
 docker compose logs -f ollama
+docker compose logs -f caddy
+docker compose logs -f cloudflared
 ```
 
-Restart:
+Restart all:
 
 ```bash
 docker compose restart
